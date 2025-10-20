@@ -1,6 +1,6 @@
 import React from 'react'
 import './App.css';
-import { collection, addDoc, getDocs, getDoc, doc, query, where } from "firebase/firestore"
+import { collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc, } from "firebase/firestore"
 import { auth, db, } from './Firebase/init';
 import { createUserWithEmailAndPassword, 
         signInWithEmailAndPassword, 
@@ -11,12 +11,31 @@ function App() {
 const [user, setUser] = React.useState({});
 const [loading, setLoading] = React.useState(true)
 
+async function updatePost(){
+  const hardcodedId = "MDlMYomFyaGvSD0TMWVn";
+  const postRef = doc(db, "posts", hardcodedId)
+  const post = await getPostById(hardcodedId);
+  console.log(post);
+  const newPost = {
+    ...post, 
+    title:  "Land a $400K job",
+  };
+  console.log(newPost);
+  updateDoc(postRef, newPost)
+}
+
+function deletePost(){
+  const hardcodedId = "MDlMYomFyaGvSD0TMWVn";
+  const postRef = doc(db, "posts", hardcodedId)
+  deleteDoc(postRef);
+}
+
 
   function createPost() {
     const post = {
       title: "Finish Interview Section",
       description: "Go Frontend Simplified",
-      uis: user.uid,
+      uid: user.uid,
     };
     addDoc(collection(db, "posts"), post)
   }
@@ -27,12 +46,10 @@ const [loading, setLoading] = React.useState(true)
     console.log(posts)
   }
 
-  async function getPostById(){
-    const hardcodedId = "MDlMYomFyaGvSD0TMWVn"
-    const postRef = doc(db, "posts", hardcodedId)
+  async function getPostById(id){
+    const postRef = doc(db, "posts", id)
     const postSnap = await getDoc(postRef);
-    const post = postSnap.data();
-    console.log(post)
+    return postSnap.data();
   }
 
   async function getPostByUid() {
@@ -91,6 +108,8 @@ const [loading, setLoading] = React.useState(true)
       <button onClick={getAllPosts}>Get All Posts</button>
       <button onClick={getPostById}>Get Post by Id</button>
       <button onClick={getPostByUid}>Get Post by Uid</button>
+      <button onClick={updatePost}>Update Post</button>
+      <button onClick={deletePost}>Delete Post</button>
     </div>
   );
 }
