@@ -1,6 +1,6 @@
 import React from 'react'
 import './App.css';
-import { collection, addDoc, getDocs } from "firebase/firestore"
+import { collection, addDoc, getDocs, getDoc, doc, query, where } from "firebase/firestore"
 import { auth, db, } from './Firebase/init';
 import { createUserWithEmailAndPassword, 
         signInWithEmailAndPassword, 
@@ -14,16 +14,34 @@ const [loading, setLoading] = React.useState(true)
 
   function createPost() {
     const post = {
-      title: "Land a 100K job",
-      description: "Finish Frontend Simplified",
+      title: "Finish Interview Section",
+      description: "Go Frontend Simplified",
+      uis: user.uid,
     };
     addDoc(collection(db, "posts"), post)
   }
 
   async function getAllPosts(){
     const { docs } = await getDocs(collection(db, "posts"));
-    const posts = docs.map(elem => elem.data());
+    const posts = docs.map(elem => ({ ...elem.data(), id: elem.id }));
     console.log(posts)
+  }
+
+  async function getPostById(){
+    const hardcodedId = "MDlMYomFyaGvSD0TMWVn"
+    const postRef = doc(db, "posts", hardcodedId)
+    const postSnap = await getDoc(postRef);
+    const post = postSnap.data();
+    console.log(post)
+  }
+
+  async function getPostByUid() {
+    const postCollectionRef = await query(
+      collection(db, 'posts'),
+      where('uid', '==', user.uid)
+    );
+    const { docs } = await getDocs(postCollectionRef);
+    console.log(docs)
   }
 
   React.useEffect(() => {
@@ -71,6 +89,8 @@ const [loading, setLoading] = React.useState(true)
       {loading ? 'loading...' : user.email}
       <button onClick={createPost}>Creat Post</button>
       <button onClick={getAllPosts}>Get All Posts</button>
+      <button onClick={getPostById}>Get Post by Id</button>
+      <button onClick={getPostByUid}>Get Post by Uid</button>
     </div>
   );
 }
